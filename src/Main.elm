@@ -90,7 +90,7 @@ filterCountry filter country =
 showCountry : Country -> Html Msg
 showCountry country =
     li []
-        [ img [ src <| "../assets/" ++ country.code ++ ".png" ] []
+        [ img [ src <| "./assets/" ++ country.code ++ ".png" ] []
         , text <| country.name ++ " ( " ++ country.code ++ " )"
         ]
 
