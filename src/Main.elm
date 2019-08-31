@@ -16,12 +16,12 @@ type alias Flags =
 
 
 type alias Model =
-    { countries : List Country, filter : String }
+    { countries : List Country, filter : Maybe String }
 
 
 initModel : Model
 initModel =
-    { countries = countries, filter = "" }
+    { countries = countries, filter = Nothing }
 
 
 
@@ -44,7 +44,15 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateFilter f ->
+        UpdateFilter filter ->
+            let
+                f =
+                    if String.isEmpty filter then
+                        Nothing
+
+                    else
+                        Just filter
+            in
             ( { model | filter = f }, Cmd.none )
 
 
@@ -63,10 +71,22 @@ subscriptions model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "List of countries"
+    let
+        title =
+            "European Union Countries"
+
+        titleWithFitler =
+            case model.filter of
+                Nothing ->
+                    title
+
+                Just f ->
+                    title ++ " | " ++ f
+    in
+    { title = title
     , body =
-        [ h1 [] [ text "Countries" ]
-        , input [ onInput UpdateFilter, placeholder "Filter list of countries" ] []
+        [ h1 [] [ text titleWithFitler ]
+        , input [ onInput UpdateFilter, placeholder "Filter the list" ] []
         , showCountries model
         ]
     }
@@ -74,17 +94,24 @@ view model =
 
 showCountries : Model -> Html Msg
 showCountries model =
-    ul [] <| List.map showCountry <| List.filter (filterCountry model.filter) model.countries
+    ul [] <|
+        List.map showCountry <|
+            List.filter (filterCountry model.filter) model.countries
 
 
-filterCountry : String -> Country -> Bool
+
+-- List.map showCountry <| List.filter (filterCountry model.filter) model.countries
+
+
+filterCountry : Maybe String -> Country -> Bool
 filterCountry filter country =
-    if String.isEmpty filter then
-        True
+    case filter of
+        Nothing ->
+            True
 
-    else
-        String.startsWith (String.toLower filter) (String.toLower country.name)
-            || String.startsWith (String.toLower filter) (String.toLower country.code)
+        Just f ->
+            String.startsWith (String.toLower f) (String.toLower country.name)
+                || String.startsWith (String.toLower f) (String.toLower country.code)
 
 
 showCountry : Country -> Html Msg

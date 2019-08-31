@@ -4431,7 +4431,8 @@ var author$project$Countries$countries = _List_fromArray(
 		{code: 'SE', name: 'Sweden'},
 		{code: 'UK', name: 'United Kingdom'}
 	]);
-var author$project$Main$initModel = {countries: author$project$Countries$countries, filter: ''};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
+var author$project$Main$initModel = {countries: author$project$Countries$countries, filter: elm$core$Maybe$Nothing};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -4615,7 +4616,6 @@ var elm$core$Array$initialize = F2(
 var elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -4837,9 +4837,13 @@ var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (model) {
 	return elm$core$Platform$Sub$none;
 };
+var elm$core$String$isEmpty = function (string) {
+	return string === '';
+};
 var author$project$Main$update = F2(
 	function (msg, model) {
-		var f = msg.a;
+		var filter = msg.a;
+		var f = elm$core$String$isEmpty(filter) ? elm$core$Maybe$Nothing : elm$core$Maybe$Just(filter);
 		return _Utils_Tuple2(
 			_Utils_update(
 				model,
@@ -4849,20 +4853,22 @@ var author$project$Main$update = F2(
 var author$project$Main$UpdateFilter = function (a) {
 	return {$: 'UpdateFilter', a: a};
 };
-var elm$core$String$isEmpty = function (string) {
-	return string === '';
-};
 var elm$core$String$startsWith = _String_startsWith;
 var elm$core$String$toLower = _String_toLower;
 var author$project$Main$filterCountry = F2(
 	function (filter, country) {
-		return elm$core$String$isEmpty(filter) ? true : (A2(
-			elm$core$String$startsWith,
-			elm$core$String$toLower(filter),
-			elm$core$String$toLower(country.name)) || A2(
-			elm$core$String$startsWith,
-			elm$core$String$toLower(filter),
-			elm$core$String$toLower(country.code)));
+		if (filter.$ === 'Nothing') {
+			return true;
+		} else {
+			var f = filter.a;
+			return A2(
+				elm$core$String$startsWith,
+				elm$core$String$toLower(f),
+				elm$core$String$toLower(country.name)) || A2(
+				elm$core$String$startsWith,
+				elm$core$String$toLower(f),
+				elm$core$String$toLower(country.code));
+		}
 	});
 var elm$core$Basics$identity = function (x) {
 	return x;
@@ -5047,6 +5053,16 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
 };
 var author$project$Main$view = function (model) {
+	var title = 'European Union Countries';
+	var titleWithFitler = function () {
+		var _n0 = model.filter;
+		if (_n0.$ === 'Nothing') {
+			return title;
+		} else {
+			var f = _n0.a;
+			return title + (' | ' + f);
+		}
+	}();
 	return {
 		body: _List_fromArray(
 			[
@@ -5055,19 +5071,19 @@ var author$project$Main$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text('Countries')
+						elm$html$Html$text(titleWithFitler)
 					])),
 				A2(
 				elm$html$Html$input,
 				_List_fromArray(
 					[
 						elm$html$Html$Events$onInput(author$project$Main$UpdateFilter),
-						elm$html$Html$Attributes$placeholder('Filter list of countries')
+						elm$html$Html$Attributes$placeholder('Filter the list')
 					]),
 				_List_Nil),
 				author$project$Main$showCountries(model)
 			]),
-		title: 'List of countries'
+		title: title
 	};
 };
 var elm$browser$Browser$External = function (a) {
